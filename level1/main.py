@@ -1,9 +1,20 @@
 import json
 from datetime import datetime, timedelta
 
-# Read data from file 'data.json'
-with open("data.json", "r") as file:
-    data = json.load(file)
+def is_valid_date_format(date_str):
+    try:
+        datetime.strptime(date_str, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
+
+try:
+    # Read data from file 'data.json'
+    with open("data.json", "r") as file:
+        data = json.load(file)
+except FileNotFoundError:
+    print("File 'data.json' not found")
+    exit(1)
 
 availabilities = []
 
