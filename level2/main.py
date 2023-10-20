@@ -45,45 +45,59 @@ availabilities = []
 
 # Calculating availabilities for each period
 for period in data["periods"]:
+    for developer in data["developers"]:
 
-    since_date_str = period.get("since")
-    until_date_str = period.get("until")
+        since_date_str = period.get("since")
+        until_date_str = period.get("until")
 
-    if not is_valid_date_format(since_date_str) or not is_valid_date_format(until_date_str):
-        raise ValueError(f"Invalid date format in period {period['id']}")
+        if not is_valid_date_format(since_date_str) or not is_valid_date_format(until_date_str):
+            raise ValueError(f"Invalid date format in period {period['id']}")
 
-    # Parsing starting date and ending date from period
-    since_date = datetime.strptime(period["since"], "%Y-%m-%d")
-    until_date = datetime.strptime(period["until"], "%Y-%m-%d")
+        # Parsing starting date and ending date from period
+        since_date = datetime.strptime(period["since"], "%Y-%m-%d")
+        until_date = datetime.strptime(period["until"], "%Y-%m-%d")
 
-    if until_date < since_date:
-            raise ValueError(f"End date is before start date in period {period['id']}")
+        if until_date < since_date:
+                raise ValueError(f"End date is before start date in period {period['id']}")
 
-    # Total days in period
-    days = (until_date - since_date).days + 1
-    
-    wdays_with_holidays = sum(1 for date in (since_date + timedelta(n) for n in range(days))
-                                        if 1 <= date.weekday() <= 5)
+        # Total days in period
+        days = (until_date - since_date).days + 1
+        
+        wdays_with_holidays = sum(1 for date in (since_date + timedelta(n) for n in range(days))
+                                            if 1 <= date.weekday() <= 5)
 
-    # Holidays for period
-    if period["id"] == 1:
-        holidays = 10
-    elif period["id"] == 2:
-        holidays = 3
-    else:
-        holidays = 0
+        # Holidays for period
+        if period["id"] == 1:
+            holidays = 10
+        elif period["id"] == 2:
+            holidays = 3
+        else:
+            holidays = 0
+        
+        # Incrementing the holidays counter if the birthday date is a working day
+        birthday = datetime.strptime(developer["birthday"], "%Y-%m-%d").date()
+        birthday = birthday.replace(year=since_date.year)
+        if date_in_period(birthday, since_date, until_date) >= 1:
+            holidays = increment_holidays_if_date_is_working_day(birthday, since_date, until_date, holidays)
+        
+        # Incrementing the holidays counter if the local holidays date is a working day
+        for local_holiday in data["local_holidays"]:
+            local_holiday_date = datetime.strptime(local_holiday["day"], "%Y-%m-%d").date()
+            if date_in_period(local_holiday_date, since_date, until_date) >= 1:
+                holidays = increment_holidays_if_date_is_working_day(local_holiday_date, since_date, until_date, holidays)
 
-    working_days = wdays_with_holidays - holidays
-    weekend_days = days - wdays_with_holidays
+        working_days = wdays_with_holidays - holidays
+        weekend_days = days - wdays_with_holidays
 
-    # Adding availabilities to list
-    availabilities.append({
-            'period_id': period["id"],
-            'total_days': days,
-            'workdays': working_days,
-            'weekend_days': weekend_days,
-            'holidays': holidays
-        })
+        # Adding availabilities to list
+        availabilities.append({
+                'developer_id': developer["id"],
+                'period_id': period["id"],
+                'total_days': days,
+                'workdays': working_days,
+                'weekend_days': weekend_days,
+                'holidays': holidays
+            })
 
 # Creating hash with availabilities 
 output = {'availabilities': availabilities}
