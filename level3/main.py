@@ -115,6 +115,10 @@ for project in data["projects"]:
 
     # Calculating feasibility
     effort_days = project["effort_days"]
+
+    if effort_days > working_days:
+        raise ValueError(f"Effort days are greater than working days in project {project['id']}")
+    
     feasibility = total_working_days_for_project >= effort_days
 
     # Adding availabilities to list
