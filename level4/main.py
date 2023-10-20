@@ -41,6 +41,7 @@ def increment_holidays_if_date_is_working_day(date, since_date, until_date, holi
     return holidays 
 
 availabilities = []
+efforts = []
 
 
 # Calculating availabilities for each project
@@ -80,6 +81,13 @@ for project in data["projects"]:
     # Total working days for project
     total_working_days_for_project = 0
 
+    developer_efforts = []
+
+    # Equally distributing the effort days among developers
+    num_developers = len(data["developers"])
+    effort_per_dev = project["effort_days"] // num_developers
+    remainder = project["effort_days"] % num_developers
+
     # Calculating total working days for project
     for developer in data["developers"]:
         dev_holidays = holidays
@@ -108,16 +116,27 @@ for project in data["projects"]:
         
         # Calculating total working days for developer
         working_days_for_dev = wdays_with_holidays - dev_holidays + holidays
+
+        effort = effort_per_dev + (1 if remainder > 0 else 0)
+        remainder -= 1
+
+        developer_efforts.append({
+            "developer_id": developer["id"],
+            "effort": min(effort, working_days_for_dev),  # Assigning only the available working days
+        })
+
         total_working_days_for_project += working_days_for_dev
 
+    # Populating efforts list
+    efforts.append({
+        "project_id": project["id"],
+        "developer_efforts": developer_efforts
+    })
         
     weekend_days = days - wdays_with_holidays
 
     # Calculating feasibility
     effort_days = project["effort_days"]
-
-    if effort_days > working_days:
-        raise ValueError(f"Effort days are greater than working days in project {project['id']}")
     
     feasibility = total_working_days_for_project >= effort_days
 
@@ -137,5 +156,12 @@ output = {'availabilities': availabilities}
 # Writing output to file 'output.json'
 with open("output.json", "w") as output_file:
     json.dump(output, output_file, indent=2)
+
+# Creating hash with efforts
+efforts_output = {'efforts': efforts}
+
+# Writing output to file 'efforts.json'
+with open("efforts.json", "w") as output_file:
+    json.dump(efforts_output, output_file, indent=2)
 
 print("Done! Check output.json file")

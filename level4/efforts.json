@@ -1,0 +1,55 @@
+{
+  "efforts": [
+    {
+      "project_id": 1,
+      "developer_efforts": [
+        {
+          "developer_id": 1,
+          "effort": 84
+        },
+        {
+          "developer_id": 2,
+          "effort": 83
+        },
+        {
+          "developer_id": 3,
+          "effort": 83
+        }
+      ]
+    },
+    {
+      "project_id": 2,
+      "developer_efforts": [
+        {
+          "developer_id": 1,
+          "effort": 50
+        },
+        {
+          "developer_id": 2,
+          "effort": 50
+        },
+        {
+          "developer_id": 3,
+          "effort": 50
+        }
+      ]
+    },
+    {
+      "project_id": 3,
+      "developer_efforts": [
+        {
+          "developer_id": 1,
+          "effort": 11
+        },
+        {
+          "developer_id": 2,
+          "effort": 11
+        },
+        {
+          "developer_id": 3,
+          "effort": 10
+        }
+      ]
+    }
+  ]
+}
