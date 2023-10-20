@@ -73,39 +73,58 @@ for project in data["projects"]:
         holidays = 3
     else:
         holidays = 0
-    
-    # Checking if the birthday date is valid
-    birthday_str = developer.get("birthday")
-    if not is_valid_date_format(birthday_str):
-        raise ValueError(f"Invalid date format in developer {developer['id']}")
-    
-    # Incrementing the holidays counter if the birthday date is a working day
-    birthday = datetime.strptime(developer["birthday"], "%Y-%m-%d").date()
-    birthday = birthday.replace(year=since_date.year)
-    if date_in_period(birthday, since_date, until_date) >= 1:
-        holidays = increment_holidays_if_date_is_working_day(birthday, since_date, until_date, holidays)
-    
-    # Incrementing the holidays counter if the local holidays date is a working day
-    for local_holiday in data["local_holidays"]:
-        # Checking if the local holiday date is valid
-        local_holiday_date_str = local_holiday.get("day")
-        if not is_valid_date_format(local_holiday_date_str):
-            raise ValueError(f"Invalid date format in local holiday {local_holiday['day']}")
-        local_holiday_date = datetime.strptime(local_holiday["day"], "%Y-%m-%d").date()
-        if date_in_period(local_holiday_date, since_date, until_date) >= 1:
-            holidays = increment_holidays_if_date_is_working_day(local_holiday_date, since_date, until_date, holidays)
 
+    # Calculating working days
     working_days = wdays_with_holidays - holidays
+
+    # Total working days for project
+    total_working_days_for_project = 0
+
+    # Calculating total working days for project
+    for developer in data["developers"]:
+        dev_holidays = holidays
+
+    
+        # Checking if the birthday date is valid
+        birthday_str = developer.get("birthday")
+        if not is_valid_date_format(birthday_str):
+            raise ValueError(f"Invalid date format in developer {developer['id']}")
+        
+        # Incrementing the holidays counter if the birthday date is a working day
+        birthday = datetime.strptime(developer["birthday"], "%Y-%m-%d").date()
+        birthday = birthday.replace(year=since_date.year)
+        if date_in_period(birthday, since_date, until_date) >= 1:
+            dev_holidays = increment_holidays_if_date_is_working_day(birthday, since_date, until_date, dev_holidays)
+        
+        # Incrementing the holidays counter if the local holidays date is a working day
+        for local_holiday in data["local_holidays"]:
+            # Checking if the local holiday date is valid
+            local_holiday_date_str = local_holiday.get("day")
+            if not is_valid_date_format(local_holiday_date_str):
+                raise ValueError(f"Invalid date format in local holiday {local_holiday['day']}")
+            local_holiday_date = datetime.strptime(local_holiday["day"], "%Y-%m-%d").date()
+            if date_in_period(local_holiday_date, since_date, until_date) >= 1:
+                dev_holidays = increment_holidays_if_date_is_working_day(local_holiday_date, since_date, until_date, dev_holidays)
+        
+        # Calculating total working days for developer
+        working_days_for_dev = wdays_with_holidays - dev_holidays + holidays
+        total_working_days_for_project += working_days_for_dev
+
+        
     weekend_days = days - wdays_with_holidays
+
+    # Calculating feasibility
+    effort_days = project["effort_days"]
+    feasibility = total_working_days_for_project >= effort_days
 
     # Adding availabilities to list
     availabilities.append({
-            'developer_id': developer["id"],
             'project_id': project["id"],
             'total_days': days,
             'workdays': working_days,
             'weekend_days': weekend_days,
-            'holidays': holidays
+            'holidays': holidays,
+            'feasibility': feasibility 
         })
 
 # Creating hash with availabilities 
