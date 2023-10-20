@@ -16,7 +16,32 @@ except FileNotFoundError:
     print("File 'data.json' not found")
     exit(1)
 
+# Function to check if a date is in the specified period
+def date_in_period(date, since_date, until_date):
+    if date.year > until_date.year or date.year < since_date.year:
+        return 0
+    years_counter = (until_date.year - since_date.year) + 1
+    k = 0
+    for n in range(years_counter):
+        check_date = datetime(since_date.year + n, date.month, date.day)
+        check_since_date = datetime(since_date.year, since_date.month, since_date.day)
+        check_until_date = datetime(until_date.year, until_date.month, until_date.day)
+        if check_since_date <= check_date <= check_until_date:
+            k += 1
+    return k
+    
+
+# Function for incrementing the holidays counter if the date is a working day
+def increment_holidays_if_date_is_working_day(date, since_date, until_date, holidays):
+    n = date_in_period(date, since_date, until_date)
+    for i in range(n):
+        check_date = datetime(since_date.year + i, date.month, date.day)
+        if 1 <= check_date.weekday() <= 5:
+            holidays += 1
+    return holidays 
+
 availabilities = []
+
 
 # Calculating availabilities for each period
 for period in data["periods"]:
