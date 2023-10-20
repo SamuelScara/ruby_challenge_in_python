@@ -21,9 +21,18 @@ availabilities = []
 # Calculating availabilities for each period
 for period in data["periods"]:
 
+    since_date_str = period.get("since")
+    until_date_str = period.get("until")
+
+    if not is_valid_date_format(since_date_str) or not is_valid_date_format(until_date_str):
+        raise ValueError(f"Invalid date format in period {period['id']}")
+
     # Parsing starting date and ending date from period
     since_date = datetime.strptime(period["since"], "%Y-%m-%d")
     until_date = datetime.strptime(period["until"], "%Y-%m-%d")
+
+    if until_date < since_date:
+            raise ValueError(f"End date is before start date in period {period['id']}")
 
     # Total days in period
     days = (until_date - since_date).days + 1
